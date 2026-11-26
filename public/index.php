@@ -13,7 +13,41 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/validate.php';
 
-// TODO: implement the form handling here.
+$name = '';
+$email = '';
+$message = '';
+
+$nameError = '';
+$emailError = '';
+$messageError = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $name = is_string($_POST['name'] ?? null) ? $_POST['name'] : '';
+    $email = is_string($_POST['email'] ?? null) ? $_POST['email'] : '';
+    $message = is_string($_POST['message'] ?? null) ? $_POST['message'] : '';
+
+    if (!validate_required($name)) {
+        $nameError = 'Name is required.';
+    } elseif (!validate_length($name, 2, 60)) {
+        $nameError = 'Name must be 2 to 60 characters.';
+    }
+
+    if (!validate_email($email)) {
+        $emailError = 'Invalid email address.';
+    }
+
+    if (!validate_required($message)) {
+        $messageError = 'Message is required.';
+    } elseif (!validate_length($message, 10, 1000)) {
+        $messageError = 'Message must be 10 to 1000 characters.';
+    }
+
+    if ($nameError === '' && $emailError === '' && $messageError === '') {
+        header('Location: success.php', true, 303);
+        exit;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,12 +57,30 @@ require_once __DIR__ . '/../src/validate.php';
 </head>
 <body>
   <h1>Contact Us</h1>
-  <!-- TODO: render the form, inline errors, and repopulated values -->
-  <form method="post" action="index.php">
-    <label>Name <input type="text" name="name"></label><br>
-    <label>Email <input type="email" name="email"></label><br>
-    <label>Message <textarea name="message"></textarea></label><br>
+  <form method="post" action="index.php" novalidate>
+
+    <label>Name
+        <input type="text" name="name"
+        value="<?= htmlspecialchars($name) ?>">
+    </label>
+    <span><?= htmlspecialchars($nameError) ?></span>
+    <br>
+
+    <label>Email
+        <input type="email" name="email"
+        value="<?= htmlspecialchars($email) ?>">
+    </label>
+    <span><?= htmlspecialchars($emailError) ?></span>
+    <br>
+
+    <label>Message
+        <textarea name="message"><?= htmlspecialchars($message) ?></textarea>
+    </label>
+    <span><?= htmlspecialchars($messageError) ?></span>
+    <br>
+
     <button type="submit">Send</button>
-  </form>
+
+</form>
 </body>
 </html>
